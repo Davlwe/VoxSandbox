@@ -36,7 +36,7 @@ private:
     Block m_Blocks[WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH];
 
     // Precomputed list of exposed-block indices (rebuilt on world changes)
-    static constexpr int MAX_EXPOSED = 25000;
+    static constexpr int MAX_EXPOSED = 200000;
     int m_ExposedIndices[MAX_EXPOSED];
     int m_ExposedCount;
 

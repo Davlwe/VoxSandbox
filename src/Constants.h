@@ -4,7 +4,7 @@
 
 // World dimensions (in blocks)
 constexpr int WORLD_WIDTH  = 64;
-constexpr int WORLD_HEIGHT = 16;
+constexpr int WORLD_HEIGHT = 128;
 constexpr int WORLD_DEPTH  = 64;
 
 // Block size in world units
