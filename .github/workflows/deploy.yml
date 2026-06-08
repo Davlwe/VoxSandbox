@@ -14,22 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: latest
-
-      - name: Configure (CMake + FetchContent raylib)
+      - name: Install Emscripten + Build
         run: |
+          # Install emsdk
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+          source ./emsdk_env.sh
+          cd ..
+
+          # Configure and build
           emcmake cmake -B build-web \
             -DWEB_BUILD=ON \
             -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-web --parallel
 
-      - name: Build
-        run: cmake --build build-web --parallel
-
-      - name: Prepare deploy folder
-        run: |
+          # Prepare deploy folder
           mkdir -p deploy
           cp build-web/VoxSandbox.html deploy/index.html
           cp build-web/VoxSandbox.js   deploy/
