@@ -2,6 +2,8 @@
 
 A Minecraft-style voxel world built with C++ and raylib.
 
+**▶ [Play in browser](https://davlwe.github.io/VoxSandbox/)**
+
 ## Controls
 
 | Key | Action |
