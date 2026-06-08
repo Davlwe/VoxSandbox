@@ -52,16 +52,11 @@
   </div>
 
   <script>
-    // Hide loading screen once the canvas starts receiving content
-    var canvas = document.getElementById('canvas');
-    var loading = document.getElementById('loading');
-    var observer = new MutationObserver(function() {
-      if (canvas.width > 0 && canvas.height > 0) {
-        loading.style.display = 'none';
-        observer.disconnect();
+    var Module = {
+      onRuntimeInitialized: function() {
+        document.getElementById('loading').style.display = 'none';
       }
-    });
-    observer.observe(canvas, { attributes: true, attributeFilter: ['width','height'] });
+    };
   </script>
   {{{ SCRIPT }}}
 </body>
