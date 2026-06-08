@@ -53,10 +53,17 @@
 
   <script>
     var Module = {
-      onRuntimeInitialized: function() {
-        document.getElementById('loading').style.display = 'none';
-      }
+      canvas: document.getElementById('canvas')
     };
+
+    // Hide loading screen once the canvas is ready
+    var loading = document.getElementById('loading');
+    var check = setInterval(function() {
+      if (document.querySelector('canvas') && document.querySelector('canvas').width > 0) {
+        setTimeout(function() { loading.style.display = 'none'; }, 500);
+        clearInterval(check);
+      }
+    }, 200);
   </script>
   {{{ SCRIPT }}}
 </body>

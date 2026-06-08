@@ -5,61 +5,52 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Emscripten
-        run: |
-          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install 3.1.61
-          ./emsdk activate 3.1.61
-          echo "$GITHUB_WORKSPACE/emsdk" >> $GITHUB_PATH
-          echo "EMSDK_ROOT=$GITHUB_WORKSPACE/emsdk" >> $GITHUB_ENV
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
 
-      - name: Activate Emscripten env
+      - name: Configure (CMake + FetchContent raylib)
         run: |
-          source $EMSDK_ROOT/emsdk_env.sh
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          echo "EMSDK=$EMSDK_ROOT" >> $GITHUB_ENV
-          echo "EM_CONFIG=$EMSDK_ROOT/.emscripten" >> $GITHUB_ENV
-
-      - name: Clone raylib
-        run: |
-          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
+          emcmake cmake -B build-web \
+            -DWEB_BUILD=ON \
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: |
-          source $EMSDK_ROOT/emsdk_env.sh
-          mkdir -p web
-          emcc -o web/index.html src/*.cpp \
-            raylib/src/rcore.c \
-            raylib/src/rshapes.c \
-            raylib/src/rtextures.c \
-            raylib/src/rtext.c \
-            raylib/src/rmodels.c \
-            raylib/src/utils.c \
-            -Iraylib/src \
-            -Iraylib/src/external/glfw/include \
-            -DPLATFORM_WEB \
-            -s USE_GLFW=3 \
-            -s ASYNCIFY \
-            -s ALLOW_MEMORY_GROWTH=1 \
-            -s TOTAL_STACK=64MB \
-            --shell-file index.html \
-            -O2
+        run: cmake --build build-web --parallel
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Rename to index.html
+        run: |
+          mv build-web/VoxSandbox.html build-web/index.html 2>/dev/null || true
+          ls -la build-web/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: web
-          publish_branch: gh-pages
+          path: build-web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

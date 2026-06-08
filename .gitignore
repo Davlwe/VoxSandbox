@@ -1,5 +1,7 @@
 # Build artifacts
 game
+build/
+build-web/
 web/
 
 # System files

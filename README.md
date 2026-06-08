@@ -34,46 +34,36 @@ src/
 ## Native Build (macOS)
 
 **Prerequisites:**
-- clang (Xcode Command Line Tools)
+- Xcode Command Line Tools
+- CMake 3.15+
 - [raylib](https://www.raylib.com/) 5.x (`brew install raylib`)
 
 ```bash
-make          # build
+make          # CMake configure + build
 make run      # build & run
 make clean    # remove build artifacts
 ```
 
-Or manually:
-
-```bash
-clang++ -std=c++17 -O2 src/*.cpp -o game \
-  -I/opt/homebrew/opt/raylib/include \
-  -L/opt/homebrew/opt/raylib/lib \
-  -lraylib \
-  -framework OpenGL -framework Cocoa -framework IOKit \
-  -framework CoreVideo -framework CoreFoundation
+> The CMake build outputs to `build/VoxSandbox`. The VS Code task (`Cmd+Shift+B`) still works for quick iteration.
 ```
 
 ## Web Build (Emscripten)
 
 **Prerequisites:**
 - [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
-- raylib source
+- CMake 3.15+
 
 ```bash
-# Clone raylib (one time)
-git clone https://github.com/raysan5/raylib.git
-
-# Build
+# Build (raylib is fetched automatically via CMake FetchContent)
 make web
-# Output → web/index.html
+# Output → build-web/VoxSandbox.html
 ```
 
 Serve locally to test:
 
 ```bash
-cd web && python3 -m http.server 8000
-# Open http://localhost:8000
+cd build-web && python3 -m http.server 8000
+# Open http://localhost:8000/VoxSandbox.html
 ```
 
 ## Adding Block Types
