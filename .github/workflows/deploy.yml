@@ -3,42 +3,43 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:   # allow manual trigger
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write    # needed for peaceiris/actions-gh-pages
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 3.1.61
-          actions-cache-folder: emsdk-cache
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install 3.1.61
+          ./emsdk activate 3.1.61
+          echo "$GITHUB_WORKSPACE/emsdk" >> $GITHUB_PATH
+          echo "EMSDK_ROOT=$GITHUB_WORKSPACE/emsdk" >> $GITHUB_ENV
 
-      - name: Cache raylib
-        uses: actions/cache@v4
-        id: cache-raylib
-        with:
-          path: raylib
-          key: raylib-5.5
+      - name: Activate Emscripten env
+        run: |
+          source $EMSDK_ROOT/emsdk_env.sh
+          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "EMSDK=$EMSDK_ROOT" >> $GITHUB_ENV
+          echo "EM_CONFIG=$EMSDK_ROOT/.emscripten" >> $GITHUB_ENV
 
       - name: Clone raylib
-        if: steps.cache-raylib.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
 
-      - name: Create output directory
-        run: mkdir -p web
-
-      - name: Build (Emscripten)
+      - name: Build
         run: |
+          source $EMSDK_ROOT/emsdk_env.sh
+          mkdir -p web
           emcc -o web/index.html src/*.cpp \
             raylib/src/rcore.c \
             raylib/src/rshapes.c \
