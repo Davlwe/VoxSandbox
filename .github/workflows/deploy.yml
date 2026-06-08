@@ -6,16 +6,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,23 +28,17 @@ jobs:
       - name: Build
         run: cmake --build build-web --parallel
 
-      - name: Rename to index.html
+      - name: Prepare deploy folder
         run: |
-          mv build-web/VoxSandbox.html build-web/index.html 2>/dev/null || true
-          ls -la build-web/
+          mkdir -p deploy
+          cp build-web/VoxSandbox.html deploy/index.html
+          cp build-web/VoxSandbox.js   deploy/
+          cp build-web/VoxSandbox.wasm deploy/
+          cp build-web/VoxSandbox.data deploy/ 2>/dev/null || true
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build-web
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: deploy
+          publish_branch: gh-pages
