@@ -3,6 +3,13 @@
 #include "Constants.h"
 #include "Block.h"
 #include "raylib.h"
+#include <cstdint>
+
+// Per-block data stored in the world grid
+struct Block {
+    BlockType type  = BlockType::Air;
+    uint8_t   state = 0;   // bit 0: door open (1) / closed (0)
+};
 
 class World {
 public:
@@ -14,15 +21,19 @@ public:
     // Draw only exposed (visible) blocks
     void Draw() const;
 
-    // Get the block at (x, y, z). Returns Air if out of bounds.
+    // Get the block type at (x, y, z).
+    // Returns Air if out of bounds, OR if the block is an open door (passable).
     BlockType GetBlock(int x, int y, int z) const;
+
+    // Get the raw block struct (ignores door open state — use for rendering/toggling)
+    Block GetRawBlock(int x, int y, int z) const;
 
     // Set a block at (x, y, z). Silently ignores out-of-bounds.
     void SetBlock(int x, int y, int z, BlockType type);
 
 private:
     // Flat 3D array
-    BlockType m_Blocks[WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH];
+    Block m_Blocks[WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH];
 
     // Precomputed list of exposed-block indices (rebuilt on world changes)
     static constexpr int MAX_EXPOSED = 25000;

@@ -23,14 +23,19 @@ void DrawCrosshair(int screenWidth, int screenHeight) {
 void DrawHotbar(int screenWidth, int screenHeight, int selected) {
     constexpr int SLOT_SIZE = 48;
     constexpr int GAP       = 4;
-    constexpr int NUM_SLOTS = 4;
+    constexpr int NUM_SLOTS = 9;
 
-    // The 4 block types in fixed order
+    // The 9 block types in fixed order (slots 6–9 are empty for now)
     const BlockType kSlots[NUM_SLOTS] = {
         BlockType::Grass,
         BlockType::Dirt,
         BlockType::Stone,
-        BlockType::Wood
+        BlockType::Wood,
+        BlockType::Leaves,
+        BlockType::Air,
+        BlockType::Air,
+        BlockType::Air,
+        BlockType::Air
     };
 
     int totalW = NUM_SLOTS * SLOT_SIZE + (NUM_SLOTS - 1) * GAP;
@@ -60,6 +65,11 @@ void DrawHotbar(int screenWidth, int screenHeight, int selected) {
             case 1: label = "2"; break;
             case 2: label = "3"; break;
             case 3: label = "4"; break;
+            case 4: label = "5"; break;
+            case 5: label = "6"; break;
+            case 6: label = "7"; break;
+            case 7: label = "8"; break;
+            case 8: label = "9"; break;
         }
         int textW = MeasureText(label, 20);
         DrawText(label, x + SLOT_SIZE - textW - 4, y + SLOT_SIZE - 22, 20, WHITE);

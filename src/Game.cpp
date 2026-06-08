@@ -14,7 +14,9 @@ Game::Game(int screenWidth, int screenHeight)
     , m_World()
     , m_Player()
     , m_Hotbar{ BlockType::Grass, BlockType::Dirt,
-                BlockType::Stone, BlockType::Wood }
+                BlockType::Stone, BlockType::Wood,
+                BlockType::Leaves, BlockType::Air,  BlockType::Air,
+                BlockType::Air,    BlockType::Air }
     , m_SelectedSlot(0)
 {
     m_World.Generate();
@@ -72,6 +74,11 @@ void Game::UpdatePlaying(float dt) {
     if (IsKeyPressed(KEY_TWO))   m_SelectedSlot = 1;
     if (IsKeyPressed(KEY_THREE)) m_SelectedSlot = 2;
     if (IsKeyPressed(KEY_FOUR))  m_SelectedSlot = 3;
+    if (IsKeyPressed(KEY_FIVE))  m_SelectedSlot = 4;
+    if (IsKeyPressed(KEY_SIX))   m_SelectedSlot = 5;
+    if (IsKeyPressed(KEY_SEVEN)) m_SelectedSlot = 6;
+    if (IsKeyPressed(KEY_EIGHT)) m_SelectedSlot = 7;
+    if (IsKeyPressed(KEY_NINE))  m_SelectedSlot = 8;
 
     // Raycast for interaction
     Vector3 rayOrigin = camera.position;

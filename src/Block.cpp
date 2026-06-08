@@ -10,6 +10,7 @@ const BlockDef BLOCK_DEFS[] = {
     { BlockType::Dirt,  "Dirt",  { 139, 90,  43,  255 }, "assets/textures/dirt.png"  },
     { BlockType::Stone, "Stone", { 128, 128, 128, 255 }, "assets/textures/stone.png" },
     { BlockType::Wood,  "Wood",  { 160, 82,  45,  255 }, "assets/textures/wood.png"  },
+    { BlockType::Leaves, "Leaves", { 34, 139, 34,  255 }, nullptr                   },
 };
 const int BLOCK_DEF_COUNT = sizeof(BLOCK_DEFS) / sizeof(BLOCK_DEFS[0]);
 
@@ -81,6 +82,39 @@ static Image GenWoodTexture() {
     return img;
 }
 
+static Image GenLeavesTexture() {
+    // Leaves: green base with dappled light/dark patches and small gaps
+    Image img = GenImageColor(16, 16, Color{ 34, 139, 34, 255 });
+
+    // Scattered lighter patches (sunlit leaves)
+    for (int i = 0; i < 40; ++i) {
+        int x = rand() % 16;
+        int y = rand() % 16;
+        int shade = 100 + rand() % 80;
+        ImageDrawPixel(&img, x, y, Color{
+            (unsigned char)(shade / 2),
+            (unsigned char)shade,
+            (unsigned char)(shade / 3),
+            255 });
+    }
+
+    // A few darker spots (shadow gaps between leaves)
+    for (int i = 0; i < 15; ++i) {
+        int x = rand() % 16;
+        int y = rand() % 16;
+        ImageDrawPixel(&img, x, y, Color{ 15, 60, 15, 255 });
+    }
+
+    // Tiny sky-visible gaps (semi-transparent / lighter)
+    for (int i = 0; i < 8; ++i) {
+        int x = rand() % 16;
+        int y = rand() % 16;
+        ImageDrawPixel(&img, x, y, Color{ 180, 220, 180, 255 });
+    }
+
+    return img;
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -110,6 +144,7 @@ void InitBlocks() {
                 case BlockType::Dirt:  img = GenDirtTexture();  break;
                 case BlockType::Stone: img = GenStoneTexture(); break;
                 case BlockType::Wood:  img = GenWoodTexture();  break;
+                case BlockType::Leaves: img = GenLeavesTexture(); break;
                 default: break;
             }
         }

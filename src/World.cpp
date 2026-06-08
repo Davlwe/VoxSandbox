@@ -3,24 +3,24 @@
 World::World()
     : m_ExposedCount(0)
 {
-    for (int i = 0; i < WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH; ++i) {
-        m_Blocks[i] = BlockType::Air;
-    }
+    // Block default constructor already fills with Air/state=0
 }
 
 void World::Generate() {
     for (int x = 0; x < WORLD_WIDTH; ++x) {
         for (int z = 0; z < WORLD_DEPTH; ++z) {
             for (int y = 0; y <= GROUND_LEVEL; ++y) {
-                BlockType block;
+                BlockType bt;
                 if (y == GROUND_LEVEL) {
-                    block = BlockType::Grass;          // top layer
+                    bt = BlockType::Grass;          // top layer
                 } else if (y > STONE_TOP) {
-                    block = BlockType::Dirt;           // middle layers
+                    bt = BlockType::Dirt;           // middle layers
                 } else {
-                    block = BlockType::Stone;          // bottom layers
+                    bt = BlockType::Stone;          // bottom layers
                 }
-                m_Blocks[Index(x, y, z)] = block;      // direct write
+                int idx = Index(x, y, z);
+                m_Blocks[idx].type  = bt;
+                m_Blocks[idx].state = 0;
             }
         }
     }
@@ -36,7 +36,7 @@ void World::Draw() const {
         int y = (idx / WORLD_WIDTH) % WORLD_HEIGHT;
         int z = idx / (WORLD_WIDTH * WORLD_HEIGHT);
 
-        BlockType block = m_Blocks[idx];
+        Block block = m_Blocks[idx];
 
         Vector3 position = {
             (float)x - WORLD_WIDTH  * 0.5f + 0.5f,
@@ -44,11 +44,11 @@ void World::Draw() const {
             (float)z - WORLD_DEPTH * 0.5f + 0.5f
         };
 
-        if (BlockHasModel(block)) {
-            Model model = GetBlockModel(block);
+        if (BlockHasModel(block.type)) {
+            Model model = GetBlockModel(block.type);
             DrawModel(model, position, 1.0f, WHITE);
         } else {
-            Color color = GetBlockColor(block);
+            Color color = GetBlockColor(block.type);
             DrawCube(position, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, color);
         }
         DrawCubeWires(position, 1.001f, 1.001f, 1.001f, DARKGRAY);
@@ -57,14 +57,20 @@ void World::Draw() const {
 
 BlockType World::GetBlock(int x, int y, int z) const {
     if (!InBounds(x, y, z)) return BlockType::Air;
+    return m_Blocks[Index(x, y, z)].type;
+}
+
+Block World::GetRawBlock(int x, int y, int z) const {
+    if (!InBounds(x, y, z)) return Block{};
     return m_Blocks[Index(x, y, z)];
 }
 
 void World::SetBlock(int x, int y, int z, BlockType type) {
     if (!InBounds(x, y, z)) return;
     int idx = Index(x, y, z);
-    if (m_Blocks[idx] == type) return;   // no change
-    m_Blocks[idx] = type;
+    if (m_Blocks[idx].type == type) return;   // no change
+    m_Blocks[idx].type  = type;
+    m_Blocks[idx].state = 0;   // reset state for new block
     RebuildExposedList();
 }
 
@@ -94,7 +100,7 @@ void World::RebuildExposedList() {
         for (int z = 0; z < WORLD_DEPTH; ++z) {
             for (int y = 0; y < WORLD_HEIGHT; ++y) {
                 int idx = Index(x, y, z);
-                if (m_Blocks[idx] == BlockType::Air) continue;
+                if (m_Blocks[idx].type == BlockType::Air) continue;
                 if (!IsExposed(x, y, z)) continue;
 
                 m_ExposedIndices[m_ExposedCount++] = idx;

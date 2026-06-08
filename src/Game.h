@@ -24,7 +24,7 @@ private:
     Player m_Player;
 
     // Hotbar
-    BlockType m_Hotbar[4];
+    BlockType m_Hotbar[9];
     int       m_SelectedSlot;
 
     // Per-frame helpers
