@@ -36,7 +36,7 @@ void Game::Run() {
 
             if (action == MenuAction::Play) {
                 m_State = GameState::Playing;
-                DisableCursor();                // FPS mouse look
+                // Cursor lock is requested on first in-game click (web needs user gesture)
             } else if (action == MenuAction::Quit) {
                 return;
             }
@@ -64,6 +64,11 @@ void Game::Run() {
 // ---------------------------------------------------------------------------
 void Game::UpdatePlaying(float dt) {
     m_Player.Update(m_World, dt);
+
+    // Lock cursor on first click (web needs user gesture for pointer lock)
+    if (!IsCursorHidden() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        DisableCursor();
+    }
 
     Camera3D camera = m_Player.GetCamera();
 
