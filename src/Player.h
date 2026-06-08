@@ -32,7 +32,7 @@ private:
 
     // Movement constants
     static constexpr float MOVE_SPEED = 8.0f;
-    static constexpr float MOUSE_SENS = 0.003f;
+    static constexpr float MOUSE_SENS = 0.006f;
     static constexpr float GRAVITY    = 25.0f;
     static constexpr float JUMP_SPEED = 9.0f;
     static constexpr float MAX_FALL   = 40.0f;
