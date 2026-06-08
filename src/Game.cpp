@@ -4,6 +4,16 @@
 #include "UI.h"
 #include "raymath.h"
 
+#ifdef PLATFORM_WEB
+  #include <emscripten.h>
+  #include <emscripten/html5.h>
+
+  static EM_BOOL OnCanvasClick(int eventType, const EmscriptenMouseEvent* e, void*) {
+      emscripten_request_pointerlock("#canvas", EM_TRUE);
+      return EM_TRUE;
+  }
+#endif
+
 // ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
@@ -36,7 +46,10 @@ void Game::Run() {
 
             if (action == MenuAction::Play) {
                 m_State = GameState::Playing;
-                // Cursor lock is requested on first in-game click (web needs user gesture)
+                DisableCursor();
+                #ifdef PLATFORM_WEB
+                  emscripten_set_mousedown_callback("#canvas", nullptr, EM_FALSE, OnCanvasClick);
+                #endif
             } else if (action == MenuAction::Quit) {
                 return;
             }
@@ -48,6 +61,10 @@ void Game::Run() {
             if (IsKeyPressed(KEY_ESCAPE)) {
                 m_State = GameState::MainMenu;
                 EnableCursor();
+                #ifdef PLATFORM_WEB
+                  emscripten_set_mousedown_callback("#canvas", nullptr, EM_FALSE, nullptr);
+                  emscripten_exit_pointerlock();
+                #endif
                 break;
             }
 
@@ -64,11 +81,6 @@ void Game::Run() {
 // ---------------------------------------------------------------------------
 void Game::UpdatePlaying(float dt) {
     m_Player.Update(m_World, dt);
-
-    // Lock cursor on first click (web needs user gesture for pointer lock)
-    if (!IsCursorHidden() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        DisableCursor();
-    }
 
     Camera3D camera = m_Player.GetCamera();
 
