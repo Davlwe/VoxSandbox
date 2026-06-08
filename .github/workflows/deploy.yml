@@ -1,0 +1,64 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # allow manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write    # needed for peaceiris/actions-gh-pages
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.61
+          actions-cache-folder: emsdk-cache
+
+      - name: Cache raylib
+        uses: actions/cache@v4
+        id: cache-raylib
+        with:
+          path: raylib
+          key: raylib-5.5
+
+      - name: Clone raylib
+        if: steps.cache-raylib.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
+
+      - name: Create output directory
+        run: mkdir -p web
+
+      - name: Build (Emscripten)
+        run: |
+          emcc -o web/index.html src/*.cpp \
+            raylib/src/rcore.c \
+            raylib/src/rshapes.c \
+            raylib/src/rtextures.c \
+            raylib/src/rtext.c \
+            raylib/src/rmodels.c \
+            raylib/src/utils.c \
+            -Iraylib/src \
+            -Iraylib/src/external/glfw/include \
+            -DPLATFORM_WEB \
+            -s USE_GLFW=3 \
+            -s ASYNCIFY \
+            -s ALLOW_MEMORY_GROWTH=1 \
+            -s TOTAL_STACK=64MB \
+            --shell-file index.html \
+            -O2
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: web
+          publish_branch: gh-pages
