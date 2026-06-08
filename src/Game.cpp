@@ -4,16 +4,6 @@
 #include "UI.h"
 #include "raymath.h"
 
-#ifdef PLATFORM_WEB
-  #include <emscripten.h>
-  #include <emscripten/html5.h>
-
-  static EM_BOOL OnCanvasClick(int eventType, const EmscriptenMouseEvent* e, void*) {
-      emscripten_request_pointerlock("#canvas", EM_TRUE);
-      return EM_TRUE;
-  }
-#endif
-
 // ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
@@ -47,9 +37,6 @@ void Game::Run() {
             if (action == MenuAction::Play) {
                 m_State = GameState::Playing;
                 DisableCursor();
-                #ifdef PLATFORM_WEB
-                  emscripten_set_mousedown_callback("#canvas", nullptr, EM_FALSE, OnCanvasClick);
-                #endif
             } else if (action == MenuAction::Quit) {
                 return;
             }
@@ -61,10 +48,6 @@ void Game::Run() {
             if (IsKeyPressed(KEY_ESCAPE)) {
                 m_State = GameState::MainMenu;
                 EnableCursor();
-                #ifdef PLATFORM_WEB
-                  emscripten_set_mousedown_callback("#canvas", nullptr, EM_FALSE, nullptr);
-                  emscripten_exit_pointerlock();
-                #endif
                 break;
             }
 

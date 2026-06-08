@@ -64,6 +64,11 @@
         clearInterval(check);
       }
     }, 200);
+
+    // Pointer lock on first canvas click (browser requires user gesture)
+    Module.canvas.addEventListener('click', function onClick() {
+      Module.canvas.requestPointerLock();
+    });
   </script>
   {{{ SCRIPT }}}
 </body>
