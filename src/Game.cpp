@@ -115,7 +115,7 @@ void Game::DrawPlaying() {
     ClearBackground(Color{ 135, 206, 235, 255 });
 
     BeginMode3D(camera);
-        m_World.Draw();
+        m_World.Draw(camera.position);
     EndMode3D();
 
     DrawPlayingUI();

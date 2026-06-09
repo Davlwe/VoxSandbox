@@ -19,7 +19,8 @@ public:
     void Generate();
 
     // Draw only exposed (visible) blocks
-    void Draw() const;
+    // cameraPos: used to sort transparent blocks back-to-front
+    void Draw(Vector3 cameraPos) const;
 
     // Get the block type at (x, y, z).
     // Returns Air if out of bounds, OR if the block is an open door (passable).

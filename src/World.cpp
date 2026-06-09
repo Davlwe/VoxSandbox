@@ -28,7 +28,7 @@ void World::Generate() {
     RebuildExposedList();   // build the draw cache once
 }
 
-void World::Draw() const {
+void World::Draw(Vector3 cameraPos) const {
     // --- Pass 1: solid (opaque) blocks -----------------------------------
     for (int i = 0; i < m_ExposedCount; ++i) {
         int idx = m_ExposedIndices[i];
@@ -60,15 +60,46 @@ void World::Draw() const {
     }
 
     // --- Pass 2: transparent blocks (alpha blended, no depth writes) -----
+    // Collect transparent block indices and sort back-to-front so alpha
+    // blending composites correctly.
+    constexpr int MAX_TRANSPARENT = 4096;
+    struct TransparentEntry { int idx; float distSq; };
+    TransparentEntry transparent[MAX_TRANSPARENT];
+    int transparentCount = 0;
+
+    for (int i = 0; i < m_ExposedCount && transparentCount < MAX_TRANSPARENT; ++i) {
+        int idx = m_ExposedIndices[i];
+        if (!IsBlockTransparent(m_Blocks[idx].type)) continue;
+
+        int x = idx % WORLD_WIDTH;
+        int y = (idx / WORLD_WIDTH) % WORLD_HEIGHT;
+        int z = idx / (WORLD_WIDTH * WORLD_HEIGHT);
+
+        float dx = cameraPos.x - ((float)x - WORLD_WIDTH  * 0.5f + 0.5f);
+        float dy = cameraPos.y - ((float)y + 0.5f);
+        float dz = cameraPos.z - ((float)z - WORLD_DEPTH * 0.5f + 0.5f);
+
+        transparent[transparentCount].idx    = idx;
+        transparent[transparentCount].distSq = dx * dx + dy * dy + dz * dz;
+        ++transparentCount;
+    }
+
+    // Simple bubble sort — descending (farthest first = back-to-front)
+    for (int i = 0; i < transparentCount; ++i) {
+        for (int j = i + 1; j < transparentCount; ++j) {
+            if (transparent[j].distSq > transparent[i].distSq) {
+                TransparentEntry tmp = transparent[i];
+                transparent[i] = transparent[j];
+                transparent[j] = tmp;
+            }
+        }
+    }
+
     BeginBlendMode(BLEND_ALPHA);
     rlDisableDepthMask();
 
-    for (int i = 0; i < m_ExposedCount; ++i) {
-        int idx = m_ExposedIndices[i];
-
-        Block block = m_Blocks[idx];
-
-        if (!IsBlockTransparent(block.type)) continue;
+    for (int t = 0; t < transparentCount; ++t) {
+        int idx = transparent[t].idx;
 
         int x = idx % WORLD_WIDTH;
         int y = (idx / WORLD_WIDTH) % WORLD_HEIGHT;
@@ -80,11 +111,11 @@ void World::Draw() const {
             (float)z - WORLD_DEPTH * 0.5f + 0.5f
         };
 
-        if (BlockHasModel(block.type)) {
-            Model model = GetBlockModel(block.type);
+        if (BlockHasModel(m_Blocks[idx].type)) {
+            Model model = GetBlockModel(m_Blocks[idx].type);
             DrawModel(model, position, 1.0f, WHITE);
         } else {
-            Color color = GetBlockColor(block.type);
+            Color color = GetBlockColor(m_Blocks[idx].type);
             DrawCube(position, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, color);
         }
         // Wireframe for transparent blocks (lighter, blended)
@@ -124,13 +155,21 @@ bool World::InBounds(int x, int y, int z) const {
            z >= 0 && z < WORLD_DEPTH;
 }
 
+static bool IsExposingNeighbor(BlockType t) {
+    return t == BlockType::Air || IsBlockTransparent(t);
+}
+
 bool World::IsExposed(int x, int y, int z) const {
-    return GetBlock(x + 1, y, z)     == BlockType::Air ||
-           GetBlock(x - 1, y, z)     == BlockType::Air ||
-           GetBlock(x, y + 1, z)     == BlockType::Air ||
-           GetBlock(x, y - 1, z)     == BlockType::Air ||
-           GetBlock(x, y, z + 1)     == BlockType::Air ||
-           GetBlock(x, y, z - 1)     == BlockType::Air;
+    // Transparent blocks are always visible (you can see into/through them)
+    if (IsBlockTransparent(GetBlock(x, y, z))) return true;
+
+    // Opaque block is exposed if any face neighbor is Air or transparent
+    return IsExposingNeighbor(GetBlock(x + 1, y,     z    )) ||
+           IsExposingNeighbor(GetBlock(x - 1, y,     z    )) ||
+           IsExposingNeighbor(GetBlock(x,     y + 1, z    )) ||
+           IsExposingNeighbor(GetBlock(x,     y - 1, z    )) ||
+           IsExposingNeighbor(GetBlock(x,     y,     z + 1)) ||
+           IsExposingNeighbor(GetBlock(x,     y,     z - 1));
 }
 
 void World::RebuildExposedList() {
