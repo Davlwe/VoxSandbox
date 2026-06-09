@@ -125,5 +125,7 @@ void Game::DrawPlaying() {
 void Game::DrawPlayingUI() {
     DrawCrosshair(m_ScreenWidth, m_ScreenHeight);
     DrawHotbar(m_ScreenWidth, m_ScreenHeight, m_SelectedSlot);
+    DrawHeldBlockName(m_ScreenWidth, m_ScreenHeight,
+                      GetBlockName(m_Hotbar[m_SelectedSlot]));
     DrawFPS(10, 10);
 }

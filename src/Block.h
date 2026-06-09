@@ -35,3 +35,6 @@ bool BlockHasModel(BlockType type);
 
 // True if this block type should render in the transparent (alpha-blended) pass
 bool IsBlockTransparent(BlockType type);
+
+// Get the display name for a block type (e.g. "Grass", "Dirt")
+const char* GetBlockName(BlockType type);

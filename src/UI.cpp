@@ -1,6 +1,7 @@
 #include "UI.h"
 #include "Block.h"
 #include "Constants.h"
+#include <cstring>
 
 // ---------------------------------------------------------------------------
 // Crosshair — two thin lines at screen center
@@ -74,4 +75,26 @@ void DrawHotbar(int screenWidth, int screenHeight, int selected) {
         int textW = MeasureText(label, 20);
         DrawText(label, x + SLOT_SIZE - textW - 4, y + SLOT_SIZE - 22, 20, WHITE);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Held block name — top-right corner
+// ---------------------------------------------------------------------------
+void DrawHeldBlockName(int screenWidth, int /*screenHeight*/, const char* name) {
+    constexpr int FONT_SIZE = 22;
+    constexpr int PADDING_X = 16;
+    constexpr int PADDING_Y = 10;
+
+    int textW = MeasureText(name, FONT_SIZE);
+    int bgW   = textW + PADDING_X * 2;
+    int bgH   = FONT_SIZE + PADDING_Y * 2;
+    int bgX   = screenWidth - bgW - 12;
+    int bgY   = 10;
+
+    // Semi-transparent dark backdrop
+    DrawRectangle(bgX, bgY, bgW, bgH, Color{ 0, 0, 0, 160 });
+    DrawRectangleLines(bgX, bgY, bgW, bgH, Color{ 255, 255, 255, 60 });
+
+    // Block name text
+    DrawText(name, bgX + PADDING_X, bgY + PADDING_Y, FONT_SIZE, WHITE);
 }

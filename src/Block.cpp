@@ -208,3 +208,10 @@ bool IsBlockTransparent(BlockType type) {
         return BLOCK_DEFS[idx].transparent;
     return false;
 }
+
+const char* GetBlockName(BlockType type) {
+    int idx = (int)type;
+    if (idx >= 0 && idx < BLOCK_DEF_COUNT)
+        return BLOCK_DEFS[idx].name;
+    return "???";
+}
