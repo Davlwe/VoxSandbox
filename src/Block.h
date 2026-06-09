@@ -11,6 +11,7 @@ struct BlockDef {
     const char* name;
     Color       fallbackColor;
     const char* textureFile;   // e.g. "assets/textures/grass.png" (or nullptr)
+    bool        transparent = false;  // true → render in alpha-blended second pass
 };
 
 // The master list — defined in Block.cpp
@@ -31,3 +32,6 @@ Model GetBlockModel(BlockType type);
 
 // True if this block type has a loaded texture model
 bool BlockHasModel(BlockType type);
+
+// True if this block type should render in the transparent (alpha-blended) pass
+bool IsBlockTransparent(BlockType type);

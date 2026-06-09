@@ -10,7 +10,7 @@ const BlockDef BLOCK_DEFS[] = {
     { BlockType::Dirt,  "Dirt",  { 139, 90,  43,  255 }, "assets/textures/dirt.png"  },
     { BlockType::Stone, "Stone", { 128, 128, 128, 255 }, "assets/textures/stone.png" },
     { BlockType::Wood,  "Wood",  { 160, 82,  45,  255 }, "assets/textures/wood.png"  },
-    { BlockType::Leaves, "Leaves", { 34, 139, 34,  255 }, "assets/textures/leaves.png" },
+    { BlockType::Leaves, "Leaves", { 34, 139, 34,  255 }, "assets/textures/leaves.png", true },
 };
 const int BLOCK_DEF_COUNT = sizeof(BLOCK_DEFS) / sizeof(BLOCK_DEFS[0]);
 
@@ -105,11 +105,18 @@ static Image GenLeavesTexture() {
         ImageDrawPixel(&img, x, y, Color{ 15, 60, 15, 255 });
     }
 
-    // Tiny sky-visible gaps (semi-transparent / lighter)
+    // Semi-transparent pixels — lets light/background show through
+    for (int i = 0; i < 20; ++i) {
+        int x = rand() % 16;
+        int y = rand() % 16;
+        ImageDrawPixel(&img, x, y, Color{ 34, 139, 34, 100 });
+    }
+
+    // Fully transparent holes (sky-visible gaps)
     for (int i = 0; i < 8; ++i) {
         int x = rand() % 16;
         int y = rand() % 16;
-        ImageDrawPixel(&img, x, y, Color{ 180, 220, 180, 255 });
+        ImageDrawPixel(&img, x, y, Color{ 0, 0, 0, 0 });
     }
 
     return img;
@@ -193,4 +200,11 @@ Model GetBlockModel(BlockType type) {
 bool BlockHasModel(BlockType type) {
     int idx = (int)type;
     return idx >= 0 && idx < BLOCK_DEF_COUNT && s_Models[idx].meshes != nullptr;
+}
+
+bool IsBlockTransparent(BlockType type) {
+    int idx = (int)type;
+    if (idx >= 0 && idx < BLOCK_DEF_COUNT)
+        return BLOCK_DEFS[idx].transparent;
+    return false;
 }

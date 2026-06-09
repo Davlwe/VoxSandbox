@@ -1,4 +1,5 @@
 #include "World.h"
+#include "rlgl.h"
 
 World::World()
     : m_ExposedCount(0)
@@ -28,15 +29,19 @@ void World::Generate() {
 }
 
 void World::Draw() const {
+    // --- Pass 1: solid (opaque) blocks -----------------------------------
     for (int i = 0; i < m_ExposedCount; ++i) {
         int idx = m_ExposedIndices[i];
+
+        Block block = m_Blocks[idx];
+
+        // Skip transparent blocks — drawn in pass 2
+        if (IsBlockTransparent(block.type)) continue;
 
         // Flat index → 3D coords
         int x = idx % WORLD_WIDTH;
         int y = (idx / WORLD_WIDTH) % WORLD_HEIGHT;
         int z = idx / (WORLD_WIDTH * WORLD_HEIGHT);
-
-        Block block = m_Blocks[idx];
 
         Vector3 position = {
             (float)x - WORLD_WIDTH  * 0.5f + 0.5f,
@@ -53,6 +58,41 @@ void World::Draw() const {
         }
         DrawCubeWires(position, 1.001f, 1.001f, 1.001f, DARKGRAY);
     }
+
+    // --- Pass 2: transparent blocks (alpha blended, no depth writes) -----
+    BeginBlendMode(BLEND_ALPHA);
+    rlDisableDepthMask();
+
+    for (int i = 0; i < m_ExposedCount; ++i) {
+        int idx = m_ExposedIndices[i];
+
+        Block block = m_Blocks[idx];
+
+        if (!IsBlockTransparent(block.type)) continue;
+
+        int x = idx % WORLD_WIDTH;
+        int y = (idx / WORLD_WIDTH) % WORLD_HEIGHT;
+        int z = idx / (WORLD_WIDTH * WORLD_HEIGHT);
+
+        Vector3 position = {
+            (float)x - WORLD_WIDTH  * 0.5f + 0.5f,
+            (float)y + 0.5f,
+            (float)z - WORLD_DEPTH * 0.5f + 0.5f
+        };
+
+        if (BlockHasModel(block.type)) {
+            Model model = GetBlockModel(block.type);
+            DrawModel(model, position, 1.0f, WHITE);
+        } else {
+            Color color = GetBlockColor(block.type);
+            DrawCube(position, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, color);
+        }
+        // Wireframe for transparent blocks (lighter, blended)
+        DrawCubeWires(position, 1.001f, 1.001f, 1.001f, Color{ 80, 80, 80, 180 });
+    }
+
+    rlEnableDepthMask();
+    EndBlendMode();
 }
 
 BlockType World::GetBlock(int x, int y, int z) const {
