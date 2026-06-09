@@ -11,7 +11,7 @@ A Minecraft-style voxel world built with C++ and raylib.
 | WASD | Move |
 | Mouse | Look around |
 | Space | Jump |
-| 1–4 | Select block (Grass / Dirt / Stone / Wood) |
+| 1-9 | Select blocks |
 | Left click | Break block |
 | Right click | Place block |
 | ESC | Return to menu |
