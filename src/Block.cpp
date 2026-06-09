@@ -10,7 +10,7 @@ const BlockDef BLOCK_DEFS[] = {
     { BlockType::Dirt,  "Dirt",  { 139, 90,  43,  255 }, "assets/textures/dirt.png"  },
     { BlockType::Stone, "Stone", { 128, 128, 128, 255 }, "assets/textures/stone.png" },
     { BlockType::Wood,  "Wood",  { 160, 82,  45,  255 }, "assets/textures/wood.png"  },
-    { BlockType::Leaves, "Leaves", { 34, 139, 34,  255 }, nullptr                   },
+    { BlockType::Leaves, "Leaves", { 34, 139, 34,  255 }, "assets/textures/leaves.png" },
 };
 const int BLOCK_DEF_COUNT = sizeof(BLOCK_DEFS) / sizeof(BLOCK_DEFS[0]);
 
