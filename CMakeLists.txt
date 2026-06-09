@@ -58,6 +58,7 @@ if(WEB_BUILD)
         "SHELL:-s ALLOW_MEMORY_GROWTH=1"
         "SHELL:-s TOTAL_STACK=64MB"
         "SHELL:--shell-file ${CMAKE_SOURCE_DIR}/index.html"
+        "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/assets@assets"
     )
 elseif(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
