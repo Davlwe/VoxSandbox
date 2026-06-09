@@ -2,6 +2,7 @@
 #include "Block.h"
 #include "Constants.h"
 #include <cstring>
+#include <cstdio>
 
 // ---------------------------------------------------------------------------
 // Crosshair — two thin lines at screen center
@@ -81,11 +82,15 @@ void DrawHotbar(int screenWidth, int screenHeight, int selected) {
 // Held block name — top-right corner
 // ---------------------------------------------------------------------------
 void DrawHeldBlockName(int screenWidth, int /*screenHeight*/, const char* name) {
-    constexpr int FONT_SIZE = 22;
-    constexpr int PADDING_X = 16;
-    constexpr int PADDING_Y = 10;
+    constexpr int FONT_SIZE   = 16;
+    constexpr int PADDING_X   = 12;
+    constexpr int PADDING_Y   = 8;
 
-    int textW = MeasureText(name, FONT_SIZE);
+    // Build the full label: "Currently holding: Grass"
+    char label[64];
+    snprintf(label, sizeof(label), "Currently holding: %s", name);
+
+    int textW = MeasureText(label, FONT_SIZE);
     int bgW   = textW + PADDING_X * 2;
     int bgH   = FONT_SIZE + PADDING_Y * 2;
     int bgX   = screenWidth - bgW - 12;
@@ -95,6 +100,6 @@ void DrawHeldBlockName(int screenWidth, int /*screenHeight*/, const char* name) 
     DrawRectangle(bgX, bgY, bgW, bgH, Color{ 0, 0, 0, 160 });
     DrawRectangleLines(bgX, bgY, bgW, bgH, Color{ 255, 255, 255, 60 });
 
-    // Block name text
-    DrawText(name, bgX + PADDING_X, bgY + PADDING_Y, FONT_SIZE, WHITE);
+    // Label text
+    DrawText(label, bgX + PADDING_X, bgY + PADDING_Y, FONT_SIZE, WHITE);
 }
